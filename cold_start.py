@@ -37,84 +37,32 @@ def boot():
 
 
 def say(message):
-    """Thin window. Dictionary is resident. No rule forest.
+    """One beat. VEX'S RULING, mirrored here rather than reinvented:
 
-    Echo: load the language, back off, talk.
-    - archive experience if it has one
-    - explicit what-is / define only → table.mean
-    - asking gap if the tick raised one
-    - otherwise a short coherent hear — never define discourse words
+    the dictionary is resident genome, NOT THE REPLY. Forcing
+    will="recall" made every content word a gloss dump \u2014 which is why a
+    greeting came back as a definition of "buddy". Archive speaks
+    experience; asking speaks gaps; otherwise the tongue composes.
     """
-    import re as _re
     with LOCK:
         o = C.tick(message=message)
         acts = (o["emission"].world or {}).get("acts") or {}
         r = (acts.get("recall") or {}).get("result") or {}
         want = o.get("wants_to_know") or {}
-        from_src = (r.get("from") or "") if r.get("found") else ""
-        msg = (message or "").strip()
-        low = msg.lower().strip()
-
-        if r.get("found") and from_src.startswith("archive"):
-            return _pack(o, r["text"], from_src or "archive")
-
-        # explicit definition only
-        mdef = _re.match(r"^(?:what(?:'s| is| are)|define|meaning of)\s+(.+?)\??$", low)
-        if mdef:
-            term = _re.sub(r"^(a|an|the)\s+", "", mdef.group(1).strip().strip("?."))
-            head = term.split()[-1] if term else ""
-            mean = None
-            try:
-                mean = C.table.mean(head) or C.table.mean(term)
-            except Exception:
-                pass
-            if mean and mean.get("senses"):
-                senses = mean["senses"]
-                gloss = None
-                for prefer in ("n", "noun", "n.", "N"):
-                    if prefer in senses and senses[prefer]:
-                        gloss = senses[prefer][0]
-                        break
-                if not gloss:
-                    for _, glosses in senses.items():
-                        if glosses:
-                            gloss = glosses[0]
-                            break
-                kind = ""
-                if mean.get("is_a_kind_of"):
-                    kind = f" — a kind of {mean['is_a_kind_of'][0]}"
-                elif mean.get("isa"):
-                    kind = f" — a kind of {mean['isa']}"
-                word = mean.get("word") or head
-                return _pack(o, f"{word}: {gloss}{kind}.", "dictionary")
-
-        if want.get("say"):
-            return _pack(o, want["say"], "asking")
-
-        # greetings — one line, curriculum if present, else plain
-        if _re.match(r"^(hello|hi|hey|good (morning|afternoon|evening)|howdy)\b", low):
-            text = "Hello."
-            if "how are you" in low:
-                text = "Hello. I am here and coherent."
-            return _pack(o, text, "genome")
-
-        if low in ("how are you", "how are you?", "how're you"):
-            return _pack(o, "I am here and coherent.", "genome")
-
-        # default: hear them. do not define okay/ask/random nouns.
-        return _pack(o, "I hear you.", "genome")
-
-
-def _pack(o, text, src):
-    return {
-        "text": text,
-        "source": src,
-        "trace": "".join(x.upper() for x in o["trace"]),
-        "act": (o.get("pragmatics") or {}).get("act"),
-        "tags": (o.get("hasu") or {}).get("tags") or [],
-        "links": STORE.count(C.entity),
-    }
-
+        frm = (r.get("from") or "") if r.get("found") else ""
+        if r.get("found") and frm.startswith("archive"):
+            text, src = r["text"], frm or "archive"
+        elif want.get("say"):
+            text, src = want["say"], "asking"
+        else:
+            spoken = C.tongue2.speak(C, o, occupied=True, store=STORE)
+            text = spoken.get("text") if isinstance(spoken, dict) else str(spoken)
+            src = (spoken.get("source") if isinstance(spoken, dict) else None) or "state"
+        return {"text": text, "source": src,
+                "trace": "".join(x.upper() for x in o["trace"]),
+                "act": (o.get("pragmatics") or {}).get("act"),
+                "tags": (o.get("hasu") or {}).get("tags") or [],
+                "links": STORE.count(C.entity)}
 
 
 class H(BaseHTTPRequestHandler):
