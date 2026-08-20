@@ -147,8 +147,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--dictionary);out
 
 <main id="log">
   <div class="turn it state">
-    <p>Run <code style="font:400 15px 'JetBrains Mono',monospace">python3 talk.py</code>
-    and this page will find it. Ask anything — it answers from its own experience
+    <p>Ask it anything — it answers from its own experience
     where it has one, from the dictionary where it doesn't, and it tells you which.</p>
     <div class="from">ready</div>
   </div>
@@ -161,7 +160,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--dictionary);out
   </form>
   <div class="where">
     <label for="url">chassis</label>
-    <input type="text" id="url" value="http://localhost:8420" aria-label="Chassis address">
+    <input type="text" id="url" value="https://cold-start-production.up.railway.app" aria-label="Chassis address">
     <span class="key">
       <b class="archive">archive</b><b class="dictionary">dictionary</b>
       <b class="genome">genome</b><b class="asking">asking</b>
@@ -249,8 +248,8 @@ $('#f').onsubmit = async e => {
   }catch(err){
     d.className = 'turn it';
     d.querySelector('p').textContent =
-      'No chassis at ' + urlBox.value + '. Start it with python3 talk.py, '
-      + 'or change the address below.';
+      'The chassis at ' + urlBox.value + ' is not answering yet. '
+      + 'Change the address below to point somewhere else.';
     label(d, 'not connected');
   }
   go.disabled=false; inp.focus();
