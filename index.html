@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chassis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0B0E14; --deep:#11151E; --edge:#1E2531;
+  --bone:#E8E4DA; --mute:#7C8494;
+  --archive:#C9A227;     /* its own experience */
+  --dictionary:#4E8098;  /* the shared language */
+  --genome:#8B6CA8;      /* what it is */
+  --asking:#C4703A;      /* the gap */
+  --state:#5E7A6B;
+  --error:#9E4444;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--void); color:var(--bone);
+  font:300 18px/1.6 Newsreader,Georgia,serif;
+  display:flex; flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── the head ────────────────────────────────────────────── */
+header{
+  padding:18px 22px 14px; border-bottom:1px solid var(--edge);
+  display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;
+}
+h1{
+  font:400 27px/1 "Instrument Serif",Georgia,serif;
+  letter-spacing:.01em;
+}
+h1 em{font-style:italic; color:var(--mute)}
+.vitals{
+  margin-left:auto; display:flex; gap:16px; flex-wrap:wrap;
+  font:400 11px/1 "JetBrains Mono",monospace; color:var(--mute);
+  letter-spacing:.06em;
+}
+.vitals b{color:var(--bone); font-weight:500}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--error);
+     display:inline-block;margin-right:6px;vertical-align:middle}
+.dot.live{background:var(--state)}
+
+/* ── the conversation ────────────────────────────────────── */
+main{
+  flex:1; overflow-y:auto; padding:28px 22px 8px;
+  display:flex; flex-direction:column; gap:26px;
+  width:100%; max-width:800px; margin:0 auto;
+}
+.turn{display:flex; flex-direction:column; gap:9px; animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.turn.you{align-items:flex-end}
+.turn.you p{
+  background:var(--deep); border:1px solid var(--edge);
+  padding:11px 16px; border-radius:15px 15px 4px 15px;
+  max-width:84%; font-weight:400;
+}
+.turn.it{padding-left:15px; border-left:2px solid var(--edge)}
+.turn.it p{max-width:70ch; font-size:19px; line-height:1.62}
+.turn.it.archive{border-left-color:var(--archive)}
+.turn.it.dictionary{border-left-color:var(--dictionary)}
+.turn.it.genome{border-left-color:var(--genome)}
+.turn.it.asking{border-left-color:var(--asking)}
+.turn.it.state{border-left-color:var(--state)}
+
+/* the source label — the audit, not decoration */
+.from{
+  font:500 10px/1 "JetBrains Mono",monospace;
+  letter-spacing:.13em; text-transform:uppercase;
+}
+.archive .from{color:var(--archive)}
+.dictionary .from{color:var(--dictionary)}
+.genome .from{color:var(--genome)}
+.asking .from{color:var(--asking)}
+.state .from{color:var(--state)}
+.from span{color:var(--mute); letter-spacing:.06em}
+
+/* ── the signature: the beat ─────────────────────────────── */
+.beat{display:flex; gap:3px; margin-top:2px}
+.beat i{
+  font:500 9px/14px "JetBrains Mono",monospace; font-style:normal;
+  width:14px; height:14px; text-align:center; color:var(--edge);
+  border-radius:2px; transition:color .18s,background .18s;
+}
+.beat i.on{color:var(--void); background:var(--mute)}
+.beat i.heart{background:var(--archive); color:var(--void)}
+
+/* ── the sill ────────────────────────────────────────────── */
+footer{
+  border-top:1px solid var(--edge); background:var(--deep);
+  padding:14px 22px calc(14px + env(safe-area-inset-bottom));
+}
+form{display:flex; gap:11px; max-width:800px; margin:0 auto}
+input[type=text]{
+  flex:1; background:var(--void); border:1px solid var(--edge);
+  border-radius:13px; padding:13px 17px; color:var(--bone);
+  font:300 18px Newsreader,Georgia,serif;
+}
+input[type=text]:focus{outline:none; border-color:var(--mute)}
+button{
+  border:0; border-radius:13px; padding:0 24px; cursor:pointer;
+  background:var(--bone); color:var(--void);
+  font:400 17px "Instrument Serif",Georgia,serif;
+}
+button:disabled{opacity:.3; cursor:default}
+button:focus-visible,input:focus-visible{outline:2px solid var(--dictionary);outline-offset:2px}
+.where{
+  max-width:800px; margin:9px auto 0; display:flex; gap:14px;
+  align-items:center; font:400 10px "JetBrains Mono",monospace;
+  color:var(--mute); letter-spacing:.06em;
+}
+.where input{
+  flex:1; background:transparent; border:0; border-bottom:1px solid var(--edge);
+  color:var(--mute); font:400 10px "JetBrains Mono",monospace; padding:3px 0;
+}
+.where input:focus{outline:none; border-color:var(--mute); color:var(--bone)}
+.key{display:flex; gap:11px; flex-wrap:wrap}
+.key b{font-weight:400}
+.key .archive{color:var(--archive)} .key .dictionary{color:var(--dictionary)}
+.key .genome{color:var(--genome)} .key .asking{color:var(--asking)}
+
+@media (max-width:640px){
+  main{padding:20px 16px 6px} header{padding:14px 16px 11px}
+  h1{font-size:23px} .turn.it p{font-size:18px}
+  .vitals{width:100%;margin-left:0;gap:12px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chassis <em id="who">—</em></h1>
+  <div class="vitals">
+    <span><i class="dot" id="pulse"></i><b id="link">offline</b></span>
+    <span><b id="words">—</b> words</span>
+    <span><b id="means">—</b> meanings</span>
+    <span><b id="links">—</b> links</span>
+  </div>
+</header>
+
+<main id="log">
+  <div class="turn it state">
+    <p>Run <code style="font:400 15px 'JetBrains Mono',monospace">python3 talk.py</code>
+    and this page will find it. Ask anything — it answers from its own experience
+    where it has one, from the dictionary where it doesn't, and it tells you which.</p>
+    <div class="from">ready</div>
+  </div>
+</main>
+
+<footer>
+  <form id="f" autocomplete="off">
+    <input type="text" id="in" placeholder="say something to it" aria-label="Message">
+    <button type="submit" id="go">say</button>
+  </form>
+  <div class="where">
+    <label for="url">chassis</label>
+    <input type="text" id="url" value="http://localhost:8420" aria-label="Chassis address">
+    <span class="key">
+      <b class="archive">archive</b><b class="dictionary">dictionary</b>
+      <b class="genome">genome</b><b class="asking">asking</b>
+    </span>
+  </div>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const log=$('#log'), inp=$('#in'), go=$('#go'), urlBox=$('#url');
+const POS = ['R','U','B','I','C','A','L','I','E','X'];   // the heart twice
+
+const src = s => {
+  s = String(s||'');
+  if (s.startsWith('base:')) return 'genome';
+  if (s.startsWith('dictionary')) return 'dictionary';
+  if (s === 'asking' || s === 'state' || s === 'archive') return s;
+  return 'archive';
+};
+
+function turn(who, text, source){
+  const d = document.createElement('div');
+  d.className = 'turn ' + who + (source ? ' ' + src(source) : '');
+  const p = document.createElement('p'); p.textContent = text; d.appendChild(p);
+  log.appendChild(d); log.scrollTop = log.scrollHeight;
+  return d;
+}
+
+/* the beat — nine positions, the heart counted twice. It runs when a
+   reply lands, in the order the tick actually took. */
+function beat(el, trace){
+  const row = document.createElement('div'); row.className = 'beat';
+  POS.forEach(() => row.appendChild(document.createElement('i')));
+  [...row.children].forEach((c,i) => c.textContent = POS[i]);
+  el.appendChild(row);
+  if (!trace) return;
+  [...row.children].forEach((c,i) => {
+    setTimeout(() => {
+      c.classList.add('on');
+      if (POS[i] === 'I') c.classList.add('heart');
+    }, 34 * i);
+  });
+}
+
+function label(el, source, act, tags){
+  const d = document.createElement('div'); d.className = 'from';
+  const bits = [source];
+  if (act) bits.push('<span>' + act.toLowerCase() + '</span>');
+  if (tags && tags.length) bits.push('<span>' + tags.slice(0,3).join(' · ') + '</span>');
+  d.innerHTML = bits.join(' &nbsp;');
+  el.appendChild(d);
+}
+
+async function vitals(){
+  try{
+    const s = await fetch(urlBox.value.replace(/\/+$/,'') + '/state').then(r=>r.json());
+    $('#who').textContent = s.entity;
+    $('#words').textContent = s.words.toLocaleString();
+    $('#means').textContent = s.dict.toLocaleString();
+    $('#links').textContent = s.links.toLocaleString();
+    $('#link').textContent = 'live';
+    $('#pulse').classList.add('live');
+  }catch(e){
+    $('#link').textContent = 'offline';
+    $('#pulse').classList.remove('live');
+  }
+}
+
+$('#f').onsubmit = async e => {
+  e.preventDefault();
+  const m = inp.value.trim(); if(!m) return;
+  inp.value=''; go.disabled=true;
+  turn('you', m);
+  const d = turn('it', '…', 'state');
+  try{
+    const r = await fetch(urlBox.value.replace(/\/+$/,'') + '/say', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message:m})
+    }).then(r=>r.json());
+    d.className = 'turn it ' + src(r.source);
+    d.querySelector('p').textContent = r.text;
+    label(d, r.source, r.act, r.tags);
+    beat(d, r.trace);
+    $('#links').textContent = (r.links||0).toLocaleString();
+  }catch(err){
+    d.className = 'turn it';
+    d.querySelector('p').textContent =
+      'No chassis at ' + urlBox.value + '. Start it with python3 talk.py, '
+      + 'or change the address below.';
+    label(d, 'not connected');
+  }
+  go.disabled=false; inp.focus();
+};
+
+urlBox.onchange = vitals;
+vitals(); setInterval(vitals, 15000); inp.focus();
+</script>
+</body>
+</html>
