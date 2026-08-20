@@ -37,18 +37,38 @@ def boot():
 
 
 def say(message):
+    """One continuous beat. Dictionary is resident knowledge — not the mouth.
+
+    Echo's win was loading the full dictionary as genome, then stepping back so
+    the body could compose. Forcing will="recall" on every message made every
+    content word a dictionary hit and returned the gloss as the reply. That is
+    the opposite of articulate conversation.
+
+    Rule:
+      - archive hit (its own experience) → speak that
+      - explicit asking gap → say the gap
+      - otherwise → tongue composes; dictionary stays on the shelves as what
+        it already knows, not as a dump
+    """
     with LOCK:
-        o = C.tick(message=message, will="recall")
+        # no forced will=recall — let the tick appraise the act
+        o = C.tick(message=message)
         acts = (o["emission"].world or {}).get("acts") or {}
         r = (acts.get("recall") or {}).get("result") or {}
         want = o.get("wants_to_know") or {}
-        if r.get("found"):
-            text, src = r["text"], r.get("from", "archive")
+        from_src = (r.get("from") or "") if r.get("found") else ""
+
+        if r.get("found") and from_src.startswith("archive"):
+            text, src = r["text"], from_src or "archive"
         elif want.get("say"):
             text, src = want["say"], "asking"
         else:
-            text = C.tongue2.speak(C, o, occupied=True, store=STORE)["text"]
-            src = "state"
+            spoken = C.tongue2.speak(C, o, occupied=True, store=STORE)
+            text = spoken.get("text") if isinstance(spoken, dict) else str(spoken)
+            # label genome if the tongue leaned on forced kind-knowledge
+            src = spoken.get("source") if isinstance(spoken, dict) else None
+            if not src:
+                src = "state"
         return {"text": text, "source": src,
                 "trace": "".join(x.upper() for x in o["trace"]),
                 "act": (o.get("pragmatics") or {}).get("act"),
