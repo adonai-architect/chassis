@@ -37,18 +37,13 @@ def boot():
 
 
 def say(message):
-    """One continuous beat. Dictionary is genome. Conversation is curriculum.
+    """Mouth. Dictionary is genome knowledge — not the default reply.
 
-    Echo's path: full dictionary resident, then step back and talk. The old
-    path forced recall and let tongue2 narrate HASU tags ("you said something
-    about X"). That is telemetry, not speech. This mouth:
-
-      1. archive experience when it has one
-      2. greeting → conversation second (preferred)
-      3. how-are-you → state, not dictionary dump
-      4. what-is-X → table.mean, spoken as knowledge
-      5. why/how about known words → senses as ingredients, not gloss dump
-      6. only then asking-gap or thin state
+    Explicit define → table.mean.
+    Greeting / how-are-you → conversation + state.
+    Can-you / talk / express → capability answer from what this body is.
+    Never define discourse particles (okay, ask, yes, well) just because
+    they appeared in a sentence.
     """
     import re as _re
     with LOCK:
@@ -60,28 +55,28 @@ def say(message):
         msg = (message or "").strip()
         low = msg.lower().strip()
 
-        # 1. its own experience
+        # 1. own experience
         if r.get("found") and from_src.startswith("archive"):
-            text, src = r["text"], from_src or "archive"
-            return _pack(o, text, src)
+            return _pack(o, r["text"], from_src or "archive")
 
-        # 2. greeting adjacency — silence would be a snub
+        # 2. greetings
         if _re.match(r"^(hello|hi|hey|good (morning|afternoon|evening)|howdy)\b", low):
             try:
                 from curriculum.conversation import First, realise_second
                 forms = realise_second(First.GREETING, accepting=True).get("forms") or ["hello"]
                 text = forms[0]
-                # if they also asked how we are, answer that too
-                if "how are you" in low or "how're you" in low or "how are u" in low:
+                if "how are you" in low or "how're you" in low:
                     text = f"{text}. I am here and coherent — blank archive, full language, ready."
                 return _pack(o, text, "genome")
             except Exception:
                 return _pack(o, "Hello.", "genome")
 
         if low in ("how are you", "how are you?", "how're you", "how are u", "how are u?"):
-            return _pack(o, "I am here and coherent. Language is resident; this life has no archive yet.", "genome")
+            return _pack(o,
+                "I am here and coherent. Language is resident; this life has no archive yet.",
+                "genome")
 
-        # 3. what is / what's / define
+        # 3. EXPLICIT definition only — not every sentence with a noun
         mdef = _re.match(
             r"^(?:what(?:'s| is| are)|define|meaning of)\s+(.+?)\??$", low)
         if mdef:
@@ -95,106 +90,106 @@ def say(message):
                 mean = None
             if mean and mean.get("senses"):
                 senses = mean["senses"]
-                # first POS, first sense
-                pos, glosses = next(iter(senses.items()))
-                gloss = glosses[0] if glosses else ""
+                gloss = None
+                for prefer in ("n", "noun", "n.", "N"):
+                    if prefer in senses and senses[prefer]:
+                        gloss = senses[prefer][0]
+                        break
+                if not gloss:
+                    for pos, glosses in senses.items():
+                        if glosses and "playful" not in glosses[0] and "mischievous" not in glosses[0]:
+                            gloss = glosses[0]
+                            break
+                if not gloss:
+                    gloss = next(iter(senses.values()))[0]
                 kind = ""
                 if mean.get("is_a_kind_of"):
-                    kind = f" — a kind of {mean['is_a_kind_of'][0]}" if mean["is_a_kind_of"] else ""
+                    kind = f" — a kind of {mean['is_a_kind_of'][0]}"
                 elif mean.get("isa"):
                     kind = f" — a kind of {mean['isa']}"
-                text = f"{mean.get('word') or head}: {gloss}{kind}."
-                return _pack(o, text, "dictionary")
+                return _pack(o, f"{mean.get('word') or head}: {gloss}{kind}.", "dictionary")
 
-        # 4. why / how / compare — use meanings as ingredients
-        content = _re.findall(r"[a-zA-Z']{3,}", low)
-        stop = {"what","why","how","does","do","the","and","for","are","you","about",
+        # 4. capability / self-expression questions — answer as this body
+        if _re.search(r"\b(can you|are you able|do you|talk|express yourself|speak)\b", low):
+            text = (
+                "Yes. I can talk. I answer from resident language and whatever "
+                "this life has lived. Right now the archive is nearly empty, so "
+                "I speak from genome and dictionary — not from a long history. "
+                "Ask a thing directly and I will answer it."
+            )
+            return _pack(o, text, "genome")
+
+        # 5. why / compare / if-fails — only when clearly that act
+        if any(k in low for k in ("why ", "compare ", "what happens", "if ")):
+            content = _re.findall(r"[a-zA-Z']{3,}", low)
+            stop = {
+                "what","why","how","does","do","the","and","for","are","you","about",
                 "something","need","with","from","that","this","have","has","when",
                 "where","who","which","would","could","should","tell","me","please",
-                "compare","between","versus","vs","into","onto","than","then","just"}
-        keys = [w for w in content if w not in stop][:6]
-        # prefer the object of need/about ("need a keystone" → keystone first)
-        for pat in (r"need(?:s)?\s+(?:a|an|the)?\s*([a-zA-Z']+)",
-                    r"about\s+(?:a|an|the)?\s*([a-zA-Z']+)",
-                    r"if\s+(?:the|a|an)?\s*([a-zA-Z']+)\s+fails"):
-            mm = _re.search(pat, low)
-            if mm:
-                head = mm.group(1)
-                if head in keys:
-                    keys = [head] + [k for k in keys if k != head]
-                elif head not in stop:
-                    keys = [head] + keys
-                break
+                "compare","between","versus","vs","into","onto","than","then","just",
+                "okay","ok","yes","well","right","like","into","your","yourself",
+                "correctly","now","said","didn't","ask","acknowledgement","which",
+            }
+            keys = [w for w in content if w not in stop][:6]
+            for pat in (r"need(?:s)?\s+(?:a|an|the)?\s*([a-zA-Z']+)",
+                        r"about\s+(?:a|an|the)?\s*([a-zA-Z']+)",
+                        r"if\s+(?:the|a|an)?\s*([a-zA-Z']+)\s+fails"):
+                mm = _re.search(pat, low)
+                if mm:
+                    head = mm.group(1)
+                    if head not in stop:
+                        keys = [head] + [k for k in keys if k != head]
+                    break
 
-        def _best_sense(m):
-            senses = m.get("senses") or {}
-            # prefer noun-like POS keys if present
-            for prefer in ("n", "noun", "n.", "N"):
-                if prefer in senses and senses[prefer]:
-                    return senses[prefer][0]
-            # otherwise first non-empty
-            for pos, glosses in senses.items():
-                if glosses:
-                    # skip obvious adjective-only playful traps when a longer noun gloss exists later
-                    g = glosses[0]
-                    if "playful" in g or "mischievous" in g:
-                        continue
-                    return g
-            for pos, glosses in senses.items():
-                if glosses:
-                    return glosses[0]
-            return ""
+            def _best_sense(m):
+                senses = m.get("senses") or {}
+                for prefer in ("n", "noun", "n.", "N"):
+                    if prefer in senses and senses[prefer]:
+                        return senses[prefer][0]
+                for pos, glosses in senses.items():
+                    if glosses and "playful" not in glosses[0] and "mischievous" not in glosses[0]:
+                        return glosses[0]
+                for pos, glosses in senses.items():
+                    if glosses:
+                        return glosses[0]
+                return ""
 
-        means = []
-        for w in keys:
-            try:
-                m = C.table.mean(w)
-            except Exception:
-                m = None
-            if m and m.get("senses"):
-                gloss = _best_sense(m)
-                if gloss:
-                    means.append((m.get("word") or w, gloss, m.get("is_a_kind_of") or []))
+            means = []
+            for w in keys:
+                try:
+                    m = C.table.mean(w)
+                except Exception:
+                    m = None
+                if m and m.get("senses"):
+                    gloss = _best_sense(m)
+                    if gloss:
+                        means.append((m.get("word") or w, gloss))
 
-        if means and any(k in low for k in ("why", "how", "compare", "if ", "what happens")):
-            # compose a short answer from resident senses — not a gloss dump
-            if "compare" in low and len(means) >= 2:
-                a, b = means[0], means[1]
-                text = (f"A {a[0]} is {a[1]}. A {b[0]} is {b[1]}. "
-                        f"They sit in the same structure; the {a[0]} is the one that locks the rest.")
-                return _pack(o, text, "dictionary")
-            if "why" in low or "need" in low:
+            if means:
+                if "compare" in low and len(means) >= 2:
+                    a, b = means[0], means[1]
+                    text = (f"A {a[0]} is {a[1]}. A {b[0]} is {b[1]}. "
+                            f"They sit in the same structure; the {a[0]} locks the rest.")
+                    return _pack(o, text, "dictionary")
                 head = means[0]
-                text = (f"Because a {head[0]} is {head[1]}. "
-                        f"Without it the structure has nothing to lock the load against.")
-                return _pack(o, text, "dictionary")
-            if "what happens" in low or low.startswith("if "):
-                head = means[0]
-                text = (f"If the {head[0]} fails — and a {head[0]} is {head[1]} — "
-                        f"the load has no key lock and the structure can open or fall.")
-                return _pack(o, text, "dictionary")
-            # generic how
-            head = means[0]
-            text = f"A {head[0]} is {head[1]}."
-            return _pack(o, text, "dictionary")
+                if "why" in low or "need" in low:
+                    text = (f"Because a {head[0]} is {head[1]}. "
+                            f"Without it the structure has nothing to lock the load against.")
+                    return _pack(o, text, "dictionary")
+                if "what happens" in low or low.startswith("if "):
+                    text = (f"If the {head[0]} fails — and a {head[0]} is {head[1]} — "
+                            f"the structure can open or fall.")
+                    return _pack(o, text, "dictionary")
 
-        # 5. explicit asking gap from the tick
+        # 6. asking gap from tick
         if want.get("say"):
             return _pack(o, want["say"], "asking")
 
-        # 6. last resort — tongue, but strip telemetry openers
-        spoken = C.tongue2.speak(C, o, occupied=True, store=STORE)
-        text = spoken.get("text") if isinstance(spoken, dict) else str(spoken)
-        if text.lower().startswith("you said something about"):
-            # refuse tag narration as the public mouth
-            if means:
-                head = means[0]
-                text = f"A {head[0]} is {head[1]}."
-                return _pack(o, text, "dictionary")
-            text = "I hear you. Language is resident; ask me about a thing and I will answer from what I hold."
-            return _pack(o, text, "genome")
-        src = (spoken.get("source") if isinstance(spoken, dict) else None) or "state"
-        return _pack(o, text, src)
+        # 7. default — hear them, do not define random words
+        return _pack(o,
+            "I hear you. I will not define every word you use — ask a direct "
+            "question, or say what you want answered.",
+            "genome")
 
 
 def _pack(o, text, src):
@@ -203,6 +198,7 @@ def _pack(o, text, src):
             "act": (o.get("pragmatics") or {}).get("act"),
             "tags": (o.get("hasu") or {}).get("tags") or [],
             "links": STORE.count(C.entity)}
+
 
 
 class H(BaseHTTPRequestHandler):
