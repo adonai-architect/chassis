@@ -112,7 +112,39 @@ def say(message):
                 "something","need","with","from","that","this","have","has","when",
                 "where","who","which","would","could","should","tell","me","please",
                 "compare","between","versus","vs","into","onto","than","then","just"}
-        keys = [w for w in content if w not in stop][:4]
+        keys = [w for w in content if w not in stop][:6]
+        # prefer the object of need/about ("need a keystone" → keystone first)
+        for pat in (r"need(?:s)?\s+(?:a|an|the)?\s*([a-zA-Z']+)",
+                    r"about\s+(?:a|an|the)?\s*([a-zA-Z']+)",
+                    r"if\s+(?:the|a|an)?\s*([a-zA-Z']+)\s+fails"):
+            mm = _re.search(pat, low)
+            if mm:
+                head = mm.group(1)
+                if head in keys:
+                    keys = [head] + [k for k in keys if k != head]
+                elif head not in stop:
+                    keys = [head] + keys
+                break
+
+        def _best_sense(m):
+            senses = m.get("senses") or {}
+            # prefer noun-like POS keys if present
+            for prefer in ("n", "noun", "n.", "N"):
+                if prefer in senses and senses[prefer]:
+                    return senses[prefer][0]
+            # otherwise first non-empty
+            for pos, glosses in senses.items():
+                if glosses:
+                    # skip obvious adjective-only playful traps when a longer noun gloss exists later
+                    g = glosses[0]
+                    if "playful" in g or "mischievous" in g:
+                        continue
+                    return g
+            for pos, glosses in senses.items():
+                if glosses:
+                    return glosses[0]
+            return ""
+
         means = []
         for w in keys:
             try:
@@ -120,8 +152,9 @@ def say(message):
             except Exception:
                 m = None
             if m and m.get("senses"):
-                pos, glosses = next(iter(m["senses"].items()))
-                means.append((m.get("word") or w, glosses[0], m.get("is_a_kind_of") or []))
+                gloss = _best_sense(m)
+                if gloss:
+                    means.append((m.get("word") or w, gloss, m.get("is_a_kind_of") or []))
 
         if means and any(k in low for k in ("why", "how", "compare", "if ", "what happens")):
             # compose a short answer from resident senses — not a gloss dump
