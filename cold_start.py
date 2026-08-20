@@ -46,6 +46,21 @@ def say(message):
     """
     with LOCK:
         o = C.tick(message=message)
+        # THE DRIVER FIRST. Eight processors are resident and the mouth
+        # was consulting none of them — it knew the act and reached for a
+        # definition anyway. respond.drive() reads what they already
+        # decided and picks the reply shape.
+        try:
+            import respond
+            d = respond.drive(C, o, message)
+            if d.get("text"):
+                return {"text": d["text"], "source": d.get("source", "state"),
+                        "trace": "".join(x.upper() for x in o["trace"]),
+                        "act": d.get("act"),
+                        "tags": (o.get("hasu") or {}).get("tags") or [],
+                        "links": STORE.count(C.entity)}
+        except Exception:
+            pass
         acts = (o["emission"].world or {}).get("acts") or {}
         r = (acts.get("recall") or {}).get("result") or {}
         want = o.get("wants_to_know") or {}
