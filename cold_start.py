@@ -51,7 +51,10 @@ def say(message):
         # definition anyway. respond.drive() reads what they already
         # decided and picks the reply shape.
         try:
+            import importlib
             import respond
+            # WIRE_CONVO: prefer chassis/respond.py when present (curriculum mouth)
+            importlib.reload(respond)
             d = respond.drive(C, o, message)
             if d.get("text"):
                 return {"text": d["text"], "source": d.get("source", "state"),
